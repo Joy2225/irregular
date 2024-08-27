@@ -1,7 +1,7 @@
 ---
 title: Setting up Frida for dynamic instrumentation of apps 
 published: 2024-04-01
-description: "How to use this blog template."
+description: "Easy setup of Frida"
 image: "./Frida.png"
 tags: ["Android", "Reverse Engineering", "CTF"]
 category: Guides

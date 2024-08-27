@@ -1,7 +1,7 @@
 ---
 title: Understanding Z3 from a beginner's perspective
 published: 2023-12-25
-description: "How to use this blog template."
+description: "A small Z3 guide"
 image: "./Z3.png"
 tags: ["Python", "CTF", "Solver"]
 category: Guides
