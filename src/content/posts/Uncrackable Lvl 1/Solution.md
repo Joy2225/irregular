@@ -1,9 +1,9 @@
 ---
 title: Uncrackable Lvl 1
 published: 2024-05-03
-description: "Writeup for Uncrackable series by OSWAP"
+description: "Writeup for Uncrackable series by OWASP"
 image: "./lvl_1.png"
-tags: ["Android", "Reverse Engineering", "OSWAP"]
+tags: ["Android", "Reverse Engineering", "OWASP"]
 category: Writeups
 draft: false
 ---
