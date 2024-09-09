@@ -2,7 +2,7 @@
 title: Injured Android 
 published: 2024-04-05
 description: "My writeups for the Injured Android series"
-image: "./Injured.jpeg"
+image: "./logo.jpeg"
 tags: ["Android", "Reverse Engineering", "CTF", "Frida", "Java"]
 category: Writeups
 draft: false
