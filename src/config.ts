@@ -40,7 +40,7 @@ export const navBarConfig: NavBarConfig = {
     LinkPreset.About,
     {
       name: 'Resume',
-      url: '/favicon/Archishman_Ghosh_Resume.pdf',    
+      url: '/Archishman_Ghosh_Resume.pdf',    
       external: true,
     },
     {
