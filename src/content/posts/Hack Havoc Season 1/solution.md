@@ -1,6 +1,6 @@
 ---
 title: Hack Havoc CTF S1 Writeup
-published: 2024-09-09
+published: 2024-09-11
 description: "Writeups for all challenges in Hack Havoc CTF S1"
 image: "./logo.png"
 tags: ["Reverse Engineering", "Web", "Crypto", "OSINT", "CTF"]
