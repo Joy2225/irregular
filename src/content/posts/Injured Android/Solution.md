@@ -356,3 +356,38 @@ There you will see the flag: `S3V3N_11`
 
 Put these two and click `submit`.
 
+**Challenge 8**
+
+Apparently there was supposed to be an `AWS bucket` information in strings, but it isn't there in the app I took from github. So yea...
+
+**Challenge 9**
+
+Looking at the code it is understood that we have to check the `FlagNineFirebaseActivity` function. 
+```java
+public FlagNineFirebaseActivity() {
+        byte[] decode = Base64.decode("ZmxhZ3Mv", 0);
+        this.y = decode;
+        d.s.d.g.d(decode, "decodedDirectory");
+        Charset charset = StandardCharsets.UTF_8;
+        d.s.d.g.d(charset, "StandardCharsets.UTF_8");
+        this.z = new String(decode, charset);
+        com.google.firebase.database.f b2 = com.google.firebase.database.f.b();
+        d.s.d.g.d(b2, "FirebaseDatabase.getInstance()");
+        com.google.firebase.database.d d2 = b2.d();
+        d.s.d.g.d(d2, "FirebaseDatabase.getInstance().reference");
+        this.A = d2;
+        com.google.firebase.database.d h = d2.h(this.z);
+        d.s.d.g.d(h, "database.child(refDirectory)");
+        this.B = h;
+    }
+```
+
+`ZmxhZ3Mv` decodes to `flags/`. In `atrings.xml` we find the firebase url `<string name="firebase_database_url">https://injuredandroid.firebaseio.com</string>`.
+
+Combining both we have `https://injuredandroid.firebaseio.com/flags`
+
+But on directly giving this on the web-browser, we will get an error. We put `.json` beside flags to read the data in the bucket.
+
+`https://injuredandroid.firebaseio.com/flags.json`
+
+Flag:- `[nine!_flag]`
