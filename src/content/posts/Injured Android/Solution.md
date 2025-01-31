@@ -391,3 +391,42 @@ But on directly giving this on the web-browser, we will get an error. We put `.j
 `https://injuredandroid.firebaseio.com/flags.json`
 
 Flag:- `[nine!_flag]`
+
+**Challenge 10**
+
+Similarly to the previous challenge we try to access the database using the link `https://injuredandroid.firebaseio.com/unicode.json` but this time we get `permission denied`. 
+
+On looking into the challenge carefully we understand that we have to do a unicode collision. I did a bit of research and landed on `https://dev.to/jagracey/hacking-github-s-auth-with-unicode-s-turkish-dotless-i-460n`
+
+It speaks about the `dotless i`. 
+
+So I just tried to enter the same email, and it says `Not authenticated`.
+
+Somehow need to do some authentication. Lets go to navigation and search for the word `authentication`.
+![](./Images/chal_10_search.png)
+
+The selected part looks the most sus.
+
+On looking through the code, it looks like this activity can be started from outside the app(i.e:- `android:exported="true"`)
+
+Lets look into `AndroidManifest.xml`.
+
+Viola, it is indeed exported.
+
+![](./Images/chal_10_export.png)
+
+We can start this activity by the command :-
+
+`adb shell am start -n b3nac.injuredandroid/b3nac.injuredandroid.QXV0aA`
+
+`am` : Activity Manager
+
+`adb shell am start -n <package_name>/<activity_class>` : The format for starting an activity.
+
+On starting the activity, a login button comes up in the apk, pressing which shows a toast stating that `Authentication Succeeded`
+
+After this I again try the email as `John@Gıthub.com`and congratz, we got the flag.
+
+Flag :- `John@Gıthub.com`
+
+`P.S : It is lucky that the classic email worked. To see what email was getting compared, one could write a frida script to dynamically hook into the compare function and see the arguments.`
