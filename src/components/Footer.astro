@@ -2,9 +2,10 @@
 
 import { profileConfig } from '../config'
 import { url } from '../utils/url-utils'
+import { Icon } from 'astro-icon/components'
 ---
 
-<div class="card-base max-w-[var(--page-width)] min-h-[4.5rem] rounded-b-none mx-auto flex items-center px-6">
+<div class="card-base max-w-[var(--page-width)] min-h-[4.5rem] rounded-b-none mx-auto flex items-center justify-between px-6">
     <div class="transition text-50 text-sm">
         © 2024 {profileConfig.name}. All Rights Reserved. /
         <a class="link text-[var(--primary)] font-medium" target="_blank" href={url('rss.xml')}>RSS</a> /
@@ -13,5 +14,23 @@ import { url } from '../utils/url-utils'
         Powered by
         <a class="link text-[var(--primary)] font-medium" target="_blank" href="https://astro.build">Astro</a> &
         <a class="link text-[var(--primary)] font-medium" target="_blank" href="https://github.com/saicaca/fuwari">Fuwari</a>
+    </div>
+    <div class="transition text-50 text-sm flex flex-row">
+        <a href="https://amrita.town" class="link text-[var(--primary)] font-medium">amrita.town</a>
+			<p class="mx-2 select-none">/</p>
+			<a href="https://amrita.town/prev" class="text-neutral-500">
+				<Icon name="material-symbols:arrow-back" class="inline" />
+				<span class="hidden sm:inline">prev</span>
+			</a>
+			<p class="mx-2 select-none">/</p>
+			<a href="https://amrita.town/random" class="text-neutral-500">
+                <Icon name="material-symbols:shuffle" class="inline" />
+				<span class="hidden sm:inline">random</span>
+			</a>
+			<p class="mx-2 select-none">/</p>
+			<a href="https://amrita.town/next" class="text-neutral-500">
+				<span class="hidden sm:inline">next</span>
+                <Icon name="material-symbols:arrow-forward" class="inline" />
+			</a>
     </div>
 </div>
