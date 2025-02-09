@@ -527,7 +527,7 @@ We will do this with adb. The command is :-
 
 After we launch this command the hidden activity pops up on our app.
 
-![deeplink activity](deeplink.png)
+![deeplink activity](./Images/deeplink.png)
 
 Now that we have the place to enter our flag we check the activity `b3nac.injuredandroid.DeepLinkActivity`.
 
