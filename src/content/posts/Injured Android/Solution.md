@@ -15,7 +15,10 @@ Get the app [here](https://github.com/B3nac/InjuredAndroid).
 
 First decompile the apk file using jadx-gui. Inside decompile all the classes under tools. Keep the AndroidManifest.xml file under Resources always open as it contains the activities that executes and is created.
 
-**Challenge 1**
+# <u>Solution</u>
+First decompile the apk file using jadx-gui. Inside decompile all the classes under tools. Keep the AndroidManifest.xml file under Resources always open as it contains the activities that executes and is created.
+
+## Challenge 1
 
 Inside AndroidManifest.xml search for `FlagOneLoginActivity` as it is the activity that will be launched when you open the challenge.
 ![](./Images/image.png)
@@ -37,7 +40,6 @@ Now we check the `submitFlag` function
             new j().b(this, "flagOneButtonColor", true);
             startActivity(intent);
         }
- }
 
 ```
 
@@ -45,7 +47,7 @@ From the hints it can be clearly made out that the flag is right infront of us. 
 
 Flag:- `F1ag_0n3`
 
-**Challenge 2**
+## Challenge 2
 
 Exported Activities are activities that can be launched from outside of an app.
 
@@ -74,7 +76,7 @@ Now on checking the injuredandroid app we find the flag on the screen. Hence an 
 
 Flag: `S3c0nd_F1ag`
 
-**Challenge 3**
+## Challenge 3
 
 In the `submitFlag` file for this challenge, we see that our input is being compared with some value.
 ```java
@@ -108,7 +110,7 @@ Flag: `F1ag_thr33`
 
 `strings.xml` is a very lucrative place to look for vulnerabilities. Usernames and passwords might just be there in poorly secure apps.
 
-**Challenge 4**
+## Challenge 4
 
 As usual we 1st look into the Activity file for this challenge.
 
@@ -149,7 +151,7 @@ Use an online decoder for the given string and we get the flag.
 
 Flag: `4_overdone_omelets`
 
-**Challenge 5**
+## Challenge 5
 
 In the `onCreate` function we see that `FlagFiveReceiver` class is called.
 ```java
@@ -213,7 +215,7 @@ On analyzing this code it can be concluded that by clicking on the challenge 3 t
 ![](./Images/Flag_5.png)
 Flag: {F1v3!}
 
-**Challenge 6**
+## Challenge 6
 
 We first check the `submitFlag` function in the `FlagSixLoginActivity` 
 ```java
@@ -278,7 +280,7 @@ We get out flag.
 Flag: `{This_Isn't_Where_I_Parked_My_Car}`
 
 
-**Challenge 7**
+## Challenge 7
 
 We see the `onCreate`  and `onDestroy` functions.
 ```java
@@ -356,11 +358,11 @@ There you will see the flag: `S3V3N_11`
 
 Put these two and click `submit`.
 
-**Challenge 8**
+## Challenge 8
 
 Apparently there was supposed to be an `AWS bucket` information in strings, but it isn't there in the app I took from github. So yea...
 
-**Challenge 9**
+## Challenge 9
 
 Looking at the code it is understood that we have to check the `FlagNineFirebaseActivity` function. 
 ```java
@@ -390,9 +392,9 @@ But on directly giving this on the web-browser, we will get an error. We put `.j
 
 `https://injuredandroid.firebaseio.com/flags.json`
 
-Flag:- `[nine!_flag]`
+Flag :- `[nine!_flag]`
 
-**Challenge 10**
+## Challenge 10
 
 Similarly to the previous challenge we try to access the database using the link `https://injuredandroid.firebaseio.com/unicode.json` but this time we get `permission denied`. 
 
@@ -430,3 +432,105 @@ After this I again try the email as `John@Gıthub.com`and congratz, we got the f
 Flag :- `John@Gıthub.com`
 
 `P.S : It is lucky that the classic email worked. To see what email was getting compared, one could write a frida script to dynamically hook into the compare function and see the arguments.`
+
+## Challenge 11
+
+So in this challenge we do not have a `flag11activity` type of class. So then I checked the `AndroidManifest.xml` and this is a `deeplinks` challenge. So before we go into the challenge, wat are deeplinks?
+
+A **deep link** is a type of hyperlink that directs users to a specific section or content within a mobile application, rather than just launching the app's home screen. It allows for seamless navigation to particular activities or fragments inside an app.
+
+### Why is it Used?
+
+- **Enhanced User Experience:** Directs users to specific content, reducing navigation time.
+    
+- **Marketing Campaigns:** Links from emails, ads, or websites can open exact app sections.
+    
+- **Cross-App Navigation:** Enables one app to link directly to content within another app.
+    
+- **Re-engagement:** Brings users back to the app with contextual content.
+    
+
+### Structure of Deep Links in Android
+
+Deep links in Android are primarily defined using **URIs (Uniform Resource Identifiers)**. They are configured in the app's `AndroidManifest.xml` file using `<intent-filter>`.
+
+#### URI Structure:
+
+A typical deep link URI looks like this:
+
+```
+myapp://section/item?id=123
+```
+
+- **Scheme:** `myapp` - Identifies the app.
+    
+- **Host & Path:** `section/item` - Specifies the section and item to open.
+    
+- **Query Parameters:** `id=123` - Provides additional data to the app.
+    
+
+#### Defining a Deep Link in `AndroidManifest.xml`:
+```xml
+<activity android:name=".TargetActivity">
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <data
+            android:scheme="myapp"
+            android:host="section"
+            android:path="/item" />
+    </intent-filter>
+</activity>
+```
+
+We find a similar section our app manifest.
+```xml
+<activity
+            android:label="@string/title_activity_deep_link"
+            android:name="b3nac.injuredandroid.DeepLinkActivity">
+            <intent-filter android:label="filter_view_flag11">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="flag11"/>
+            </intent-filter>
+            <intent-filter android:label="filter_view_flag11">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https"/>
+            </intent-filter>
+        </activity>
+```
+
+Based on the code we can see that the `uri` is `flag11`. So if we launch the uri, we can get into the activity for challenge 11 which is `b3nac.injuredandroid.DeepLinkActivity`. 
+
+We will do this with adb. The command is :- 
+`adb shell am start -W -a android.intent.action.VIEW -d "flag11://" b3nac.injuredandroid`
+
+#### Explanation of Arguments:
+
+- `adb shell`: Opens a command shell on the connected Android device or emulator.
+    
+- `am start`: Uses the Activity Manager (am) to start a new activity.
+    
+- `-W`: Waits for the launch to complete before returning.
+    
+- `-a android.intent.action.VIEW`: Specifies the intent action to be performed, which in this case is to "view" the content.
+    
+- `-d "flag11://"`: Defines the data URI, which acts as the deep link to trigger a specific section within the app.
+    
+- `b3nac.injuredandroid`: The package name of the target application.
+
+After we launch this command the hidden activity pops up on our app.
+
+![deeplink activity](deeplink.png)
+
+Now that we have the place to enter our flag we check the activity `b3nac.injuredandroid.DeepLinkActivity`.
+
+On looking through the code, it is just the same as the firebase challenge. The sub-path getting used in this case is `/binary`. So we go to the link `https://injuredandroid.firebaseio.com/binary.json` and we have our flag there.
+
+Flag :- `HIIMASTRING`
