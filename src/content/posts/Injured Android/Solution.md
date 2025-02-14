@@ -534,3 +534,49 @@ Now that we have the place to enter our flag we check the activity `b3nac.injure
 On looking through the code, it is just the same as the firebase challenge. The sub-path getting used in this case is `/binary`. So we go to the link `https://injuredandroid.firebaseio.com/binary.json` and we have our flag there.
 
 Flag :- `HIIMASTRING`
+
+## Challenge 12
+
+In this challenge I was unaware of the topic `Protected activity`, so I decided to read upon it before trying anything. I looked into this blog by `oversecured`. https://blog.oversecured.com/Android-Access-to-app-protected-components/. 
+
+After reading this I got an idea and figured out the solution as well. Lets go at it step-by-step.
+
+Looking into the `Manifest` file we see that the `FlagTwelveProtectedActivity` is **not** exported. Then we look at the code of the activity and we see that the activity is actually expecting an intent, which will be having an extra string `totally_secure`. 
+
+```java
+protected void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
+        WebView webView = new WebView(this);
+        setContentView(webView);
+        j.j.a(this);
+        C((Toolbar) findViewById(R.id.toolbar));
+        Uri parse = Uri.parse(getIntent().getStringExtra("totally_secure"));
+        WebSettings settings = webView.getSettings();
+        d.s.d.g.d(settings, "flagWebView.settings");
+        settings.setJavaScriptEnabled(true);
+        webView.setWebChromeClient(new WebChromeClient());
+        if (getIntent() == null || !getIntent().hasExtra("totally_secure")) {
+            finish();
+            return;
+        }
+        d.s.d.g.d(parse, "uri");
+        if (!d.s.d.g.a("https", parse.getScheme())) {
+            webView.loadData(getIntent().getStringExtra("totally_secure"), "text/html", "UTF-8");
+            return;
+        }
+        FlagsOverview.K = true;
+        j jVar = new j();
+        Context applicationContext = getApplicationContext();
+        d.s.d.g.d(applicationContext, "applicationContext");
+        jVar.b(applicationContext, "flagTwelveButtonColor", true);
+        F();
+    }
+```
+
+Now the content of the extra-string if it is not a `https` link, it will jut treat it as `http` and just display the content as a web-view. So it can be exploited by sending an intent with the extra string `totally_secure` and any `https` link. The following adb command can be used for the task:-
+
+`adb shell am start -n b3nac.injuredandroid/.FlagTwelveProtectedActivity --es totally_secure "https://www.google.com"`
+
+And the flag screen will come before you.
+
+![Flag image for chal 12](./Images/protected.png)
