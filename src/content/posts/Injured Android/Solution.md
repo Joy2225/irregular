@@ -715,3 +715,133 @@ We will push this file to our device using the command
 Now just run the `html` on the device and click on the links one by one. We can directly click the last one as we already have the flag but it is a proof of concept that we can make the app execute a binary.
 
 Flag :- `Treasure_Planet`
+
+## Challenge 15
+
+This challenge clearly tells us that we have to deal with assembly. Classic Reverse engineering. On opening this challenge level, we see an array of bytes. `[58, 42, 40]`. What does it do? Lets check the `AssemblyActivity` code on `jadx`. 
+
+In this particular class, the execution will start as follows:-
+
+1. The loading of the native library. This happens as that statement is within `static`. In java `static` belongs to the class and is always initialized first.
+
+```java
+static {
+        System.loadLibrary("native-lib");
+    }
+```
+
+2. The constructor execution
+```java
+public AssemblyActivity() {
+        com.google.firebase.database.f b2 = com.google.firebase.database.f.b();
+        d.s.d.g.d(b2, "FirebaseDatabase.getInstance()");
+        com.google.firebase.database.d d2 = b2.d();
+        d.s.d.g.d(d2, "FirebaseDatabase.getInstance().reference");
+        this.x = d2;
+        com.google.firebase.database.d h = d2.h("/assembly");
+        d.s.d.g.d(h, "database.child(\"/assembly\")");
+        this.y = h;
+        this.z = stringFromJNI();
+    }
+```
+
+Constructors in java are methods which have same name as the class-name.  They are used for initialization purposes. Here we can see that some value is retrieved from the remote database and the function `stringFromJNI` is called. This function is present in our native library `libnative-lib.so`.
+
+These are highly optimized compiled binary code files, which are used to perform certain operations. Java functions are used in c/c++ using the `Java Native Interface (JNI)`.  The native codes are used to perform certain time-crucial operations and provide in-built security by obfuscating and optimizing the binary. Its a very brief overview about native libraries. For more information read here https://developer.android.com/guide/topics/manifest/uses-native-library-element and the official documentation for implementation purposes :- https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/jniTOC.html
+
+The native libraries in an apk are present in the `lib` folder and have binaries for various folders. I will use the `x86_64` one. Most of us start assembly with it.
+
+Lets put it in `ghidra` or `ida` and find the required function. 
+
+JNI functions which are used in the application side have a special naming style. It always starts with `Java_<Package_name>` Here there are no dots. Dots are replaced with `_`.
+
+The actual syntax:- `Java_<PackageName>_<ClassName>_<MethodName>(JNIEnv* env, jobject obj, ...)`. For more information refer the docs.
+
+Our decompiled native code:-
+```c
+undefined8 Java_b3nac_injuredandroid_AssemblyActivity_stringFromJNI(long *param_1)
+
+{
+  undefined8 uVar1;
+  ulong uVar2;
+  ulong uVar3;
+  undefined *puVar4;
+  uint uVar5;
+  undefined *puVar6;
+  long in_FS_OFFSET;
+  bool bVar7;
+  basic_string<> local_38;
+  undefined local_37 [7];
+  ulong local_30;
+  undefined *local_28;
+  long local_20;
+  
+  local_20 = *(long *)(in_FS_OFFSET + 0x28);
+  std::__ndk1::basic_string<>::basic_string<>(&local_38,"win");
+  bVar7 = ((byte)local_38 & 1) == 0;
+  if (bVar7) {
+    if ((byte)local_38 >> 1 == 0) goto LAB_0010ed38;
+  }
+  else if (local_30 == 0) goto LAB_0010ed38;
+  uVar5 = 0;
+  uVar2 = 0;
+  do {
+    puVar6 = local_28;
+    if (bVar7) {
+      puVar6 = local_37;
+    }
+    puVar4 = local_28;
+    if (bVar7) {
+      puVar4 = local_37;
+    }
+    puVar4[uVar2] = (&DAT_0012c1d8)[uVar5 % 5] ^ puVar6[uVar2];
+    uVar2 = uVar2 + 1;
+    bVar7 = ((byte)local_38 & 1) == 0;
+    uVar3 = local_30;
+    if (bVar7) {
+      uVar3 = (ulong)((byte)local_38 >> 1);
+    }
+    uVar5 = uVar5 + 1;
+  } while (uVar2 < uVar3);
+LAB_0010ed38:
+  puVar6 = local_28;
+  if (bVar7) {
+    puVar6 = local_37;
+  }
+                    /* try { // try from 0010ed4b to 0010ed56 has its CatchHandler @ 0010ed8c */
+  uVar1 = (**(code **)(*param_1 + 0x538))(param_1,puVar6);
+  if (((byte)local_38 & 1) != 0) {
+    operator.delete(local_28);
+  }
+  if (*(long *)(in_FS_OFFSET + 0x28) != local_20) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return uVar1;
+}
+```
+
+We see that a string having the value `win` is getting created and then each letter is being `xored` with a particular key value in `DAT_0012c1d8`. We double click on it to see the values present. I am using `ghidra`. Other decompilers may show in a different way.
+
+
+`                             DAT_0012c1d8                                    XREF[4]:     Java_b3nac_injuredandroid_Assemb
+                                                                                          Java_b3nac_injuredandroid_Assemb
+                                                                                          encryptDecrypt:0010ee86 (*) , 
+                                                                                          encryptDecrypt:0010eed9 (R)   
+        0012c1d8 4d              undefine   4Dh
+                             DAT_0012c1d9                                    XREF[1]:     Java_b3nac_injuredandroid_Assemb
+        0012c1d9 41              undefine   41h
+        0012c1da 44              ??         44h    D
+        0012c1db 00              ??         00h
+        0012c1dc 00              ??         00h
+`
+
+So the key is `[0x4d, 0x41, 0x44]`. The xored result is `[58 40 42]`. Now isn't that interesting.
+```python
+for i,j in zip([0x4d,0x41,0x44], [ord(i) for i in "win"]):
+    print((i^j), end=" ")
+```
+
+So the initial array was clearly the encrypted flag. Thus the flag is `win`. We can check it in the app.
+
+Flag :- `win`
