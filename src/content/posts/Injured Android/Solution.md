@@ -821,19 +821,20 @@ LAB_0010ed38:
 }
 ```
 
-We see that a string having the value `win` is getting created and then each letter is being `xored` with a particular key value in `DAT_0012c1d8`. We double click on it to see the values present. I am using `ghidra`. Other decompilers may show in a different way.
+We see that a string having the value `win` is getting created and then each letter is being `xored` with a particular key value in `DAT_0012c1d8`. We double click on it to see the values present. I am using `ghidra`. Other decompilers may show in a different way. I cleaned the exact copy a bit.
 
 
-`                             DAT_0012c1d8                                    XREF[4]:     Java_b3nac_injuredandroid_Assemb
-                                                                                          Java_b3nac_injuredandroid_Assemb
-                                                                                          encryptDecrypt:0010ee86 (*) , 
-                                                                                          encryptDecrypt:0010eed9 (R)   
-        0012c1d8 4d              undefine   4Dh
-                             DAT_0012c1d9                                    XREF[1]:     Java_b3nac_injuredandroid_Assemb
-        0012c1d9 41              undefine   41h
-        0012c1da 44              ??         44h    D
-        0012c1db 00              ??         00h
-        0012c1dc 00              ??         00h
+`                             DAT_0012C1D8  XREF[4]:  
+    Java_b3nac_injuredandroid_AssemblyActivity  
+    encryptDecrypt: 0010EE86 (*), 0010EED9 (R)  
+
+Address     Value   ASCII  
+-------------------------  
+0012C1D8    4D      'M'  
+0012C1D9    41      'A'  
+0012C1DA    44      'D'  
+0012C1DB    00      (NULL)  
+0012C1DC    00      (NULL)  
 `
 
 So the key is `[0x4d, 0x41, 0x44]`. The xored result is `[58 40 42]`. Now isn't that interesting.
