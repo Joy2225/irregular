@@ -824,10 +824,6 @@ LAB_0010ed38:
 We see that a string having the value `win` is getting created and then each letter is being `xored` with a particular key value in `DAT_0012c1d8`. We double click on it to see the values present. I am using `ghidra`. Other decompilers may show in a different way. I cleaned the exact copy a bit.
 
 
-`                             DAT_0012C1D8  XREF[4]:  
-    Java_b3nac_injuredandroid_AssemblyActivity  
-    encryptDecrypt: 0010EE86 (*), 0010EED9 (R)  
-
 Address     Value   ASCII  
 -------------------------  
 0012C1D8    4D      'M'  
@@ -835,7 +831,7 @@ Address     Value   ASCII
 0012C1DA    44      'D'  
 0012C1DB    00      (NULL)  
 0012C1DC    00      (NULL)  
-`
+
 
 So the key is `[0x4d, 0x41, 0x44]`. The xored result is `[58 40 42]`. Now isn't that interesting.
 ```python
