@@ -950,7 +950,7 @@ Intent to be sent :- `adb shell am start -a android.intent.action.VIEW -d "http:
 
 After the hostname we can give anything. Now here after the challenge is broken from what I understood after trying for hours to figure out if I was doing something wrong.
 
-![Burpsuite capture](/Images/c15.png)
+![Burpsuite capture](./Images/c15.png)
 
 The responses don't have the flag. Leveraging the power of AI, I got the equivalent decode logic for the crypto part as I was too lazy to find out the python syntax and write the decrypt code for DES cipher.
 
