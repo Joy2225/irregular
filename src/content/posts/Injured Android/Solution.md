@@ -842,3 +842,181 @@ for i,j in zip([0x4d,0x41,0x44], [ord(i) for i in "win"]):
 So the initial array was clearly the encrypted flag. Thus the flag is `win`. We can check it in the app.
 
 Flag :- `win`
+
+## Challenge 16
+
+`Note :- This challenge is broken(the last part) but I will still write the intended way to get the flag`
+
+This challenge is related to CSP bypass. Now what is CSP? full-form:- Content-security Policy. It is basically like a series of instructions that a website tells a browser. It basically tells the browser to place certain restrictions on what the code on the site can do. Read more about CSP [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP).
+
+In `CSPBypassActivity.class` we see that it is taking an intent and checking if the link sent via the intent is `http` or `https`. If it is `https`, it just blocks the intent, and if it is `http`, it calls the function `L`(as shown in the decompilation in jadx).
+
+```java
+protected void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
+        setContentView(R.layout.activity_c_s_p_bypass);
+        EditText editText = (EditText) findViewById(R.id.editText10);
+        Button button = (Button) findViewById(R.id.button42);
+        d.s.d.g.d(editText, "editText");
+        editText.setVisibility(4);
+        d.s.d.g.d(button, "button");
+        button.setVisibility(4);
+        j.j.a(this);
+        H();
+        C((Toolbar) findViewById(R.id.toolbar));
+        ((FloatingActionButton) findViewById(R.id.fab)).setOnClickListener(new a(this));
+        Intent intent = getIntent();
+        d.s.d.g.d(intent, "intentToUri");
+        Uri data = intent.getData();
+        String str = null;
+        if (data == null) goto L5;
+        String str2 = data.getScheme();
+    L7:
+        if (d.s.d.g.a("http", str2) == true) goto L15;
+        if (data == null) goto L10;
+        String str3 = data.getScheme();
+    L12:
+        if (d.s.d.g.a("https", str3) == true) goto L15;
+        boolean z = false;
+    L16:
+        if (z == false) goto L33;
+        if (data == null) goto L19;
+        String str4 = data.getScheme();
+    L21:
+        if (d.s.d.g.a(str4, "http") == false) goto L23;
+        L();
+```
+
+```java
+private final void L() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("https://");
+        Intent intent = getIntent();
+        d.s.d.g.d(intent, "intent");
+        Uri data = intent.getData();
+        sb.append(data != null ? data.getHost() : null);
+        Intent intent2 = getIntent();
+        d.s.d.g.d(intent2, "intent");
+        Uri data2 = intent2.getData();
+        sb.append(data2 != null ? data2.getPath() : null);
+        String sb2 = sb.toString();
+        Intent intent3 = new Intent("android.intent.action.VIEW");
+        intent3.setData(Uri.parse(sb2));
+        M();
+        startActivity(intent3);
+    }
+
+    private final void M() {
+        EditText editText = (EditText) findViewById(R.id.editText10);
+        Button button = (Button) findViewById(R.id.button42);
+        d.s.d.g.d(editText, "editText");
+        editText.setVisibility(0);
+        d.s.d.g.d(button, "button");
+        button.setVisibility(0);
+        m.a(this).a(new b.a.a.v.l(0, k.a(k.b("kOC6ZrdMXEnfIKWihcBNLTWIhDiINUfSQyYrFsTpEBGZy1KmfPMTwtba8CXa/WVAVoJ1ACvJMd8f/MF97/7UaeNCQvC9OD4lZ/vQN6LmpBU=")), new b(), new c()));
+    }
+```
+
+In function `L`, we see that its converting the link we gave to a `https` link and then calling function `M` which is decoding some data and then sending a request to the link got after decoding. You can go to the decode function by double clicking on `k.b`.
+
+So now we know that we need to send an intent with a `http` link. Lets go to manifest and check if any specific `hostname` is specified.
+
+```xml
+<activity
+            android:theme="@style/AppTheme.NoActionBar"
+            android:label="@string/title_activity_c_s_p_bypass"
+            android:name="b3nac.injuredandroid.CSPBypassActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="http"
+                    android:host="b3nac.com"
+                    android:pathPattern="/.*/"/>
+                <data
+                    android:scheme="https"
+                    android:host="b3nac.com"
+                    android:pathPattern="/.*/"/>
+            </intent-filter>
+        </activity>
+```
+
+We can see that its expecting the hostname :- `b3nac.com`.
+
+So we need to send an intent and analyze the traffic at the same time. To analyze the traffic, I am using Burpsuite. To set it up watch this: - https://youtu.be/sRldKfYMKYs?si=sii__qS3REQRC5JP
+
+Intent to be sent :- `adb shell am start -a android.intent.action.VIEW -d "http://b3nac.com/aaaa/"`
+
+After the hostname we can give anything. Now here after the challenge is broken from what I understood after trying for hours to figure out if I was doing something wrong.
+
+![Burpsuite capture](/Images/c15.png)
+
+The responses don't have the flag. Leveraging the power of AI, I got the equivalent decode logic for the crypto part as I was too lazy to find out the python syntax and write the decrypt code for DES cipher.
+
+```python
+from base64 import b64decode
+from Crypto.Cipher import DES
+
+key = b"{Captur3Th1sToo}"[:8]
+ciphertext = b64decode("kOC6ZrdMXEnfIKWihcBNLTWIhDiINUfSQyYrFsTpEBGZy1KmfPMTwtba8CXa/WVAVoJ1ACvJMd8f/MF97/7UaeNCQvC9OD4lZ/vQN6LmpBU=")
+cipher = DES.new(key, DES.MODE_ECB)
+
+plaintext = cipher.decrypt(ciphertext)
+
+pad_len = plaintext[-1]
+if all(p == pad_len for p in plaintext[-pad_len:]):
+    plaintext = plaintext[:-pad_len]
+
+print(plaintext.decode("utf-8"))
+
+
+key = b"Captur3Th1s"[:8]
+ciphertext = b64decode("+D8wTKFawdpzDeaQweqRF9JrNCJIBc9xR+mQXdIwIj+jYtTA3uVc+g8K68YFw7QMFCc8sbDwXL8=")
+cipher = DES.new(key, DES.MODE_ECB)
+
+plaintext = cipher.decrypt(ciphertext)
+
+pad_len = plaintext[-1]
+if all(p == pad_len for p in plaintext[-pad_len:]):
+    plaintext = plaintext[:-pad_len]
+
+print(plaintext.decode("utf-8"))
+```
+
+`https://b3nac.com/contentsecuritypolicyflag.html` is the link which is getting decoded and then the request is sent to it, but we don't see anything like this in the burpsuite capture.
+
+Funny enough, if I go to `http://b3nac.com/contentsecuritypolicyflag.html` `(notice http)`, the same response comes up which came on burpsuite for the intent sent, i,e:-
+```html
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+Server: Nginx Microsoft-HTTPAPI/2.0
+X-Powered-By: Nginx
+Date: Mon, 17 Mar 2025 12:20:25 GMT
+Content-Length: 312
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+<script language="javascript" type="text/javascript" src="/common.js"></script>
+<script language="javascript" type="text/javascript" src="/tj.js"></script>
+</body>
+</html>
+```
+
+After this, I went and checked the author's guide to how to solve the challenge. You can find it here :- https://github.com/B3nac/InjuredAndroid/blob/master/InjuredAndroid-FlagWalkthroughs.md
+
+He is also doing something similar, but he is writing a html code and sending it to the device and sending the intent via it.
+
+```html
+<html>
+<a href="https://b3nac.com/anything/">Should get blocked</a>
+<a href="http://b3nac.com/anything/">CSP Bypass</a>
+</html>
+```
+
+I tried that approach as well but still it didn't work. So yeah. I guess the website is broken. One thing could be done is to use `frida` to get the flag when it is being fetched from the database but I didn't go into it as it wasn't the way to solve the challenge.
+
+`Please let me know though if I am doing something wrong somewhere in this.`
