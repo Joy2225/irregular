@@ -1020,3 +1020,42 @@ He is also doing something similar, but he is writing a html code and sending it
 I tried that approach as well but still it didn't work. So yeah. I guess the website is broken. One thing could be done is to use `frida` to get the flag when it is being fetched from the database but I didn't go into it as it wasn't the way to solve the challenge.
 
 `Please let me know though if I am doing something wrong somewhere in this.`
+
+Yep. I got frustrated after a few hours of this thing not working. So I decided to write the `frida-script` to get the flag. 
+
+So after the intent `adb shell am start -a android.intent.action.VIEW -d "http://b3nac.com/aaaa/` is sent to the app, at-first the `DeekLink` activity was opening (It also has the https scheme, so probably the link is going there and maybe not going to the CSPBypassActivity? Not really sure). Then after one back, we have the `flag submission text box`
+
+![flag submission screen](./Images/C15_flag_submit.png)
+
+It is clearly seen that the request didn't yield a proper response. Well according to the intended solution, the flag was supposed to be shown here instead of `Try another url`. 
+
+The frida script to get the flag :- 
+```js
+Java.perform(function() {
+    let g = Java.use("d.s.d.g");
+    g["a"].implementation = function (obj, obj2) {
+        console.log(`g.a is called: obj=${obj}, obj2=${obj2}`);
+        let result = this["a"](obj, obj2);
+        console.log(`g.a result=${result}`);
+        return result;
+    };
+});
+```
+
+`Jadx` has this nice feature of `copy as a frida script`. The above code is from there. The function whose behavior we are observing is basically the check function and just checks whether two strings are equal or not.
+
+`Note :- The frida-server should be started and the app must be started using frida before sending the intent to get to the above screen.`
+
+Start the app using frida and loading the script :- `frida -U -f b3nac.injuredandroid -l .\lvl_16.js`
+
+Now we put some arbitrary value in the textbox and then `submit`.
+
+Result from `frida` :-
+```
+g.a is called: obj=aaaa, obj2=[Nice_Work]
+g.a result=false
+```
+
+ And thus we have out flag. This highlights the capability of `Frida` as well.
+
+Flag :- `[Nice_Work]`
