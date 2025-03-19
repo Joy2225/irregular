@@ -2,7 +2,7 @@
 const { slug, url } = Astro.props;
 ---
 
-<div id="disqus_thread" data-slug={slug} data-url="url"></div>
+<div id="disqus_thread" data-slug={slug} data-url={url}></div>
 <script is:inline>
   function disqus_config() {
     const thread = document.getElementById("disqus_thread");
