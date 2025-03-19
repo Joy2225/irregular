@@ -13,6 +13,7 @@ import PostMetadata from '../../components/PostMeta.astro'
 import ImageWrapper from '../../components/misc/ImageWrapper.astro'
 import { profileConfig } from '../../config'
 import { formatDateToYYYYMMDD } from '../../utils/date-utils'
+import Disqus from "@components/Disqus.astro";
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection('posts', ({ data }) => {
@@ -128,8 +129,10 @@ const jsonLd = {
             </div>}
         </a>
     </div>
-
+    
+    <Disqus slug={entry.slug} url={Astro.url} />
 </MainGridLayout>
+
 
 <style is:global>
 #post-container :nth-child(1) { animation-delay: calc(var(--content-delay) + 0ms) }

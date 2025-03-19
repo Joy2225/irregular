@@ -1,0 +1,16 @@
+---
+const { slug, url } = Astro.props;
+---
+<div id="disqus_thread"></div>
+<script is:inline>
+  function disqus_config() {
+    this.page.url = {url}; // Use the passed URL from Astro
+    this.page.identifier = "{slug}"; // Use the passed slug as the unique identifier
+  }
+
+  const d = document,
+    s = d.createElement("script");
+  s.src = "https://irregular-25.disqus.com/embed.js"; // Replace with your Disqus shortname URL
+  s.setAttribute("data-timestamp", (+new Date()).toString());
+  (d.head || d.body).appendChild(s);
+</script>
