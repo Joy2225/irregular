@@ -13,7 +13,6 @@ import PostMetadata from '../../components/PostMeta.astro'
 import ImageWrapper from '../../components/misc/ImageWrapper.astro'
 import { profileConfig } from '../../config'
 import { formatDateToYYYYMMDD } from '../../utils/date-utils'
-import Disqus from "@components/Disqus.astro";
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection('posts', ({ data }) => {
@@ -129,8 +128,16 @@ const jsonLd = {
             </div>}
         </a>
     </div>
-    
-    <Disqus slug={entry.slug} url={Astro.url.href} />
+    <script 
+  src="https://utteranc.es/client.js"
+  data-repo="Joy2225/irregular"
+  data-issue-term="title"
+  data-theme="github-dark"
+  crossorigin="anonymous"
+  async
+></script>
+
+
 </MainGridLayout>
 
 
