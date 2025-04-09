@@ -1,3 +1,14 @@
+---
+title: Injured Android 
+published: 2024-04-05
+description: "My writeups for the Injured Android series"
+image: "./logo.jpeg"
+tags: ["Android", "Reverse Engineering", "CTF", "Frida", "Java"]
+category: Writeups
+draft: false
+---
+
+
 # <u>Solution</u>
 First decompile the apk file using jadx-gui. Inside decompile all the classes under tools. Keep the AndroidManifest.xml file under Resources always open as it contains the activities that executes and is created.
 
