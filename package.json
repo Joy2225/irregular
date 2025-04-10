@@ -21,6 +21,7 @@
     "@fontsource-variable/jetbrains-mono": "^5.0.21",
     "@fontsource/roboto": "^5.0.13",
     "@swup/astro": "^1.4.1",
+    "@vercel/analytics": "^1.5.0",
     "astro": "^4.12.2",
     "astro-compress": "^2.3.0",
     "astro-icon": "1.1.0",
@@ -43,7 +44,8 @@
     "svelte": "^4.2.18",
     "tailwindcss": "^3.4.7",
     "typescript": "^5.5.4",
-    "unist-util-visit": "^5.0.0"
+    "unist-util-visit": "^5.0.0",
+    "vercel": "^41.5.0"
   },
   "devDependencies": {
     "@astrojs/ts-plugin": "^1.9.0",
@@ -57,6 +59,7 @@
     "@tailwindcss/typography": "^0.5.13",
     "@types/markdown-it": "^14.1.2",
     "@types/mdast": "^4.0.4",
+    "@types/node": "^18",
     "@types/sanitize-html": "^2.11.0",
     "photoswipe": "^5.4.4",
     "remark-github-admonitions-to-directives": "^1.0.5",
