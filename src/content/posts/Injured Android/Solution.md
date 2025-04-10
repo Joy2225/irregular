@@ -1659,3 +1659,11 @@ Now as I previously mentioned, by trial-and-error, I figured out that `MD5` was 
 
 Therefore,
 `Flag`:- `034d361a5942e67697d17534f37ed5a9`
+
+Thanks to `b3nac` a.k.a [Kyle Benac](https://www.linkedin.com/in/kyle-benac/overlay/about-this-profile/) for this excellent vulnerable app — **InjuredAndroid** — which is intentionally crafted for Android security researchers, CTF players, and mobile penetration testers to explore real-world exploitation scenarios in a safe environment.
+
+It helped me understand the various types of common vulnerabilities present in android apps.
+
+Each challenge was like a mini CTF that taught me something new — from insecure activities and weak broadcast receivers to file leaks and privilege escalation techniques.
+
+Highly recommended for any beginner looking to level up their Android security skills!
